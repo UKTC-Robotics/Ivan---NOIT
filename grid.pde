@@ -136,9 +136,9 @@ void Block(int startA, int startB, int size, float trCorner, float tlCorner, flo
   byte realValue;
   rect(startA, startB, size, size, trCorner, tlCorner, blCorner, brCorner);
   if(Mouseover(startA, startB, size)){
-    tempVar=value; //map(value, -128, 127, 0, 100);
+    tempVar=map(value, -128, 127, 0, 100);
     realValue=(byte)tempVar;
-    print(realValue, "\n");
+    print(100-realValue, "\n");
   }
 }
 
