@@ -19,6 +19,9 @@ Slider slider1 = new Slider(390, 630, 390, 740, 30);
 Slider slider2 = new Slider(390, 690, 390, 740, 30);
 Slider slider3 = new Slider(390, 750, 390, 740, 30);
 
+PImage logo;
+boolean pic = true;
+
 Grid grid;
 //block of the grid
 class Block{
@@ -218,7 +221,6 @@ class Button{
   //toggle body
     fill(255);
     rect(startA+(sizeA*9)/10, startB, (sizeA*1)/10, sizeB, 0, tlCorner, blCorner, 0);
-    println (option0);
     return option0;
   }
   
@@ -267,51 +269,61 @@ class Button{
 
 void setup(){
   size(800, 800);
-  background(200, 200, 200);
+
+  
+  logo = loadImage("logo.png");
+  background(logo);
   
   grid = new Grid(50, 100, 100, sensors);
   grid.CreateGrid();
   
-  button1.CreateButton();
-  button2.CreateButton();
-  button3.CreateButton();
+
+  
 }
 
 void draw(){
- // background(200, 200, 200);
-    //label
-  //creation of outline behind the grid
-  fill(0);
-  rect(40, 90, 720, 520, 20, 20, 20, 20);
   
-  noStroke();
-  fill(0);
-  rect(30, 20, 740, 50, 20, 20, 20, 20);
-  fill(255);
-  textSize(30);
-  text("Охладителна система за персонален компютър", 41, 55);
+  if(pic){
+    delay(2000);
+    background(200, 200, 200);
+    button1.CreateButton();
+    button2.CreateButton();
+    button3.CreateButton();
+    pic = false;
+  }else{
+    //creation of outline behind the grid
+    fill(0);
+    rect(40, 90, 720, 520, 20, 20, 20, 20);
+    
+    noStroke();
+    fill(0);
+    rect(30, 20, 740, 50, 20, 20, 20, 20);
+    fill(255);
+    textSize(30);
+    text("Охладителна система за персонален компютър", 41, 55);
+    
+    fill(160);
+    rect(385, 620, 390, 50, 10, 10, 10, 10);
+    rect(385, 680, 390, 50, 10, 10, 10, 10);
+    rect(385, 740, 390, 50, 10, 10, 10, 10);
+    
+    slider1.CreateSlider();
+    slider1.mouseDragged();
+    slider2.CreateSlider();
+    slider2.mouseDragged();
+    slider3.CreateSlider();
+    slider3.mouseDragged();
   
-  fill(160);
-  rect(385, 620, 390, 50, 10, 10, 10, 10);
-  rect(385, 680, 390, 50, 10, 10, 10, 10);
-  rect(385, 740, 390, 50, 10, 10, 10, 10);
+    noStroke();
   
-  slider1.CreateSlider();
-  slider1.mouseDragged();
-  slider2.CreateSlider();
-  slider2.mouseDragged();
-  slider3.CreateSlider();
-  slider3.mouseDragged();
+    currentMillis = millis();
+    if(currentMillis - previousMillis >= interval){
+      previousMillis = currentMillis;
+      button1.UpdateButton();
+      button2.UpdateButton();
+      button3.UpdateButton();
+    }
   
-  noStroke();
-  
-  currentMillis = millis();
-  if(currentMillis - previousMillis >= interval){
-    previousMillis = currentMillis;
-    button1.UpdateButton();
-    button2.UpdateButton();
-    button3.UpdateButton();
+    grid.UpdateGrid(sensors);
   }
-  
-  grid.UpdateGrid(sensors);
 }
