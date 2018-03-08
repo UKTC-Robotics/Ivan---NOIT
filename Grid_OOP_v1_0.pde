@@ -6,6 +6,19 @@ byte sensors[][]={
   {(127),(60),(45)}
 };
 
+final long interval = 150;
+
+long currentMillis=0;
+long previousMillis=0;
+
+Button button1 = new Button(50, 620, 320, 50, 20, 20, 20, 20, "Предни вентилатори", 10, -10);
+Button button2 = new Button(50, 680, 320, 50, 20, 20, 20, 20, "Горни вентилатори", 10, -10);
+Button button3 = new Button(50, 740, 320, 50, 20, 20, 20, 20, "Задни вентилатори", 10, -10);
+
+Slider slider1 = new Slider(390, 630, 390, 740, 30);
+Slider slider2 = new Slider(390, 690, 390, 740, 30);
+Slider slider3 = new Slider(390, 750, 390, 740, 30);
+
 Grid grid;
 //block of the grid
 class Block{
@@ -69,9 +82,6 @@ class Grid{
   }
   //used to create the grid and its layout the first time
   public void CreateGrid(){
-    //creation of outline behind the grid
-    fill(0);
-    rect(startA-size/10, startB-size/10, size*(maxA+1)+(size/10)*2, size*(maxB+1)+(size/10)*2, size/5, size/5, size/5, size/5);
     //for loops to create the grid
     for(int a = 0; a <= maxA; a++){
       for(int b = 0; b <= maxB; b++){
@@ -121,11 +131,159 @@ class Grid{
   }
 }
 
+public class Slider{
+  private float boxX, boxY, sliderStart, sliderEnd, xOffset;
+  private int boxSize;
+  private boolean overBox;
+  
+  Slider(float boxX, float boxY, float sliderStart, float sliderEnd, int boxSize){
+    this.boxX = (sliderEnd - sliderStart)/2 + boxX;
+    this.boxY = boxY;
+    this.sliderStart = sliderStart;
+    this.sliderEnd = sliderEnd;
+    this.xOffset = 0.0;
+    this.boxSize = boxSize;
+    this.overBox = false;
+  }
+  
+  public void CreateSlider(){
+    if (mouseX > boxX && mouseX < boxX+boxSize && 
+        mouseY > boxY && mouseY < boxY+boxSize) {
+    overBox = true;  
+    if(mousePressed() && mousePressed) { 
+      stroke(255); 
+      fill(100);
+      } 
+    } else {
+      stroke(153);
+      fill(80);
+      overBox = false;
+    }
+  
+  // Draw the box
+    rect(boxX, boxY, boxSize, boxSize);
+  
+  }
+  boolean mousePressed() {
+    xOffset = mouseX-boxX; 
+    if(overBox){   
+      fill(153);
+      stroke(255);
+      return true;
+    } else {
+      return false;
+    }
+     
+  }
+
+  void mouseDragged() {
+    if(mousePressed && mouseX <= sliderEnd + 28 && mouseX >= sliderStart + 4
+    && mouseY > boxY && mouseY < boxY+boxSize) {
+      boxX = mouseX-xOffset; 
+    }
+  }
+}
+
+class Button{
+  
+  private float startA, startB, trCorner, tlCorner, blCorner, brCorner;
+  private int sizeA, sizeB, option0, option1;
+  private String inText;
+  private boolean toggle;
+  public boolean isClicked;
+  
+  Button(float startA, float startB, int sizeA, int sizeB, float trCorner, float tlCorner, float blCorner, float brCorner, String inText, int option0, int option1){
+    this.startA = startA;
+    this.startB = startB;
+    this.sizeA = sizeA;
+    this.sizeB = sizeB;
+    this.trCorner = trCorner;
+    this.tlCorner = tlCorner;
+    this.blCorner = blCorner;
+    this.brCorner = brCorner;
+    this.inText = inText;
+    this.option0 = option0;
+    this.option1 = option1;
+    this.toggle = false;
+    this.isClicked = false;
+  }
+  
+  public int CreateButton(){
+    fill(0);
+  rect(startA, startB, (sizeA*9)/10, sizeB, trCorner, 0, 0, brCorner);
+  fill(225);
+  textSize(sizeB/2);
+  text(inText, startA+(sizeA*5)/100, startB+(sizeB*67)/100);
+  
+  //toggle body
+    fill(255);
+    rect(startA+(sizeA*9)/10, startB, (sizeA*1)/10, sizeB, 0, tlCorner, blCorner, 0);
+    println (option0);
+    return option0;
+  }
+  
+  public int UpdateButton(){
+    fill(0);
+    rect(startA, startB, (sizeA*9)/10, sizeB, trCorner, 0, 0, brCorner);
+    fill(225);
+    textSize(sizeB/2);
+    text(inText, startA+(sizeA*5)/100, startB+(sizeB*67)/100);
+    
+    if (mousePressed && (mouseButton == LEFT) && Mouseover(startA, startB, sizeA, sizeB)){
+    if(toggle && isClicked){
+      toggle=false;
+    }else if(!toggle && isClicked){
+      toggle=true;
+    }
+      isClicked=true;
+    }
+    //toggle body
+    if(toggle){
+      fill(255);
+      rect(startA+(sizeA*9)/10, startB, (sizeA*1)/10, sizeB, 0, tlCorner, blCorner, 0);
+      return option0;
+    }else{
+      fill(0);
+      rect(startA+(sizeA*9)/10, startB, (sizeA*1)/10, sizeB, 0, tlCorner, blCorner, 0);
+      return option1;
+    }  
+  }
+  
+ 
+
+  boolean Mouseover(float startA, float startB, float sizeA, float sizeB){
+    if (mouseX >= startA && mouseX <= startA+sizeA && mouseY >= startB && mouseY <= startB+sizeB) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  void mouseReleased() {
+    isClicked = false;
+  }
+}
+
+
 void setup(){
   size(800, 800);
   background(200, 200, 200);
   
-  //label
+  grid = new Grid(50, 100, 100, sensors);
+  grid.CreateGrid();
+  
+  button1.CreateButton();
+  button2.CreateButton();
+  button3.CreateButton();
+}
+
+void draw(){
+ // background(200, 200, 200);
+    //label
+  //creation of outline behind the grid
+  fill(0);
+  rect(40, 90, 720, 520, 20, 20, 20, 20);
+  
   noStroke();
   fill(0);
   rect(30, 20, 740, 50, 20, 20, 20, 20);
@@ -133,10 +291,27 @@ void setup(){
   textSize(30);
   text("Охладителна система за персонален компютър", 41, 55);
   
-  grid = new Grid(50, 100, 100, sensors);
-  grid.CreateGrid();
-}
-
-void draw(){
+  fill(160);
+  rect(385, 620, 390, 50, 10, 10, 10, 10);
+  rect(385, 680, 390, 50, 10, 10, 10, 10);
+  rect(385, 740, 390, 50, 10, 10, 10, 10);
+  
+  slider1.CreateSlider();
+  slider1.mouseDragged();
+  slider2.CreateSlider();
+  slider2.mouseDragged();
+  slider3.CreateSlider();
+  slider3.mouseDragged();
+  
+  noStroke();
+  
+  currentMillis = millis();
+  if(currentMillis - previousMillis >= interval){
+    previousMillis = currentMillis;
+    button1.UpdateButton();
+    button2.UpdateButton();
+    button3.UpdateButton();
+  }
+  
   grid.UpdateGrid(sensors);
 }
