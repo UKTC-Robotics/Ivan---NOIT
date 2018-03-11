@@ -1,3 +1,5 @@
+import processing.serial.*;
+
 //global variables
 byte sensors[][]={
   {(-20),(127),(95)},
@@ -5,23 +7,26 @@ byte sensors[][]={
   {(0),(35),(10)},
   {(127),(60),(45)}
 };
-
+byte tempSensors[];
+byte fans[] = new byte[3];
+//used for timer of the button
 final long interval = 150;
-
 long currentMillis=0;
 long previousMillis=0;
-
+//buttons
 Button button1 = new Button(50, 620, 320, 50, 20, 20, 20, 20, "Предни вентилатори", 10, -10);
 Button button2 = new Button(50, 680, 320, 50, 20, 20, 20, 20, "Горни вентилатори", 10, -10);
 Button button3 = new Button(50, 740, 320, 50, 20, 20, 20, 20, "Задни вентилатори", 10, -10);
-
+//sliders
 Slider slider1 = new Slider(390, 630, 390, 740, 30);
 Slider slider2 = new Slider(390, 690, 390, 740, 30);
 Slider slider3 = new Slider(390, 750, 390, 740, 30);
-
+//used for the logo
 PImage logo;
 boolean pic = true;
-
+//serial
+Serial myPort;
+//used to create the grid
 Grid grid;
 //block of the grid
 class Block{
@@ -133,12 +138,13 @@ class Grid{
     }
   }
 }
-
+//sliders to control fan speeds
 public class Slider{
+  //variables
   private float boxX, boxY, sliderStart, sliderEnd, xOffset;
   private int boxSize;
   private boolean overBox;
-  
+  //constructor
   Slider(float boxX, float boxY, float sliderStart, float sliderEnd, int boxSize){
     this.boxX = (sliderEnd - sliderStart)/2 + boxX;
     this.boxY = boxY;
@@ -148,7 +154,7 @@ public class Slider{
     this.boxSize = boxSize;
     this.overBox = false;
   }
-  
+  //used to create and update the slider's box position
   public void CreateSlider(){
     if (mouseX > boxX && mouseX < boxX+boxSize && 
         mouseY > boxY && mouseY < boxY+boxSize) {
@@ -161,12 +167,11 @@ public class Slider{
       stroke(153);
       fill(80);
       overBox = false;
-    }
-  
+    }  
   // Draw the box
     rect(boxX, boxY, boxSize, boxSize);
-  
   }
+  //check if the mouse is pressed and makes the stroke
   boolean mousePressed() {
     xOffset = mouseX-boxX; 
     if(overBox){   
@@ -175,10 +180,9 @@ public class Slider{
       return true;
     } else {
       return false;
-    }
-     
+    }  
   }
-
+  //adjust the position of the box
   void mouseDragged() {
     if(mousePressed && mouseX <= sliderEnd + 28 && mouseX >= sliderStart + 4
     && mouseY > boxY && mouseY < boxY+boxSize) {
@@ -186,15 +190,15 @@ public class Slider{
     }
   }
 }
-
+//used for the buttons
 class Button{
-  
+  //variables
   private float startA, startB, trCorner, tlCorner, blCorner, brCorner;
   private int sizeA, sizeB, option0, option1;
   private String inText;
   private boolean toggle;
   public boolean isClicked;
-  
+  //constructor
   Button(float startA, float startB, int sizeA, int sizeB, float trCorner, float tlCorner, float blCorner, float brCorner, String inText, int option0, int option1){
     this.startA = startA;
     this.startB = startB;
@@ -210,27 +214,28 @@ class Button{
     this.toggle = false;
     this.isClicked = false;
   }
-  
+  //creates button the first time
   public int CreateButton(){
-    fill(0);
-  rect(startA, startB, (sizeA*9)/10, sizeB, trCorner, 0, 0, brCorner);
-  fill(225);
-  textSize(sizeB/2);
-  text(inText, startA+(sizeA*5)/100, startB+(sizeB*67)/100);
-  
-  //toggle body
-    fill(255);
-    rect(startA+(sizeA*9)/10, startB, (sizeA*1)/10, sizeB, 0, tlCorner, blCorner, 0);
-    return option0;
-  }
-  
-  public int UpdateButton(){
+    //button main body
     fill(0);
     rect(startA, startB, (sizeA*9)/10, sizeB, trCorner, 0, 0, brCorner);
     fill(225);
     textSize(sizeB/2);
     text(inText, startA+(sizeA*5)/100, startB+(sizeB*67)/100);
-    
+    //toggle body
+    fill(255);
+    rect(startA+(sizeA*9)/10, startB, (sizeA*1)/10, sizeB, 0, tlCorner, blCorner, 0);
+    return option0;
+  }
+  //used to update the button
+  public int UpdateButton(){
+    //main body
+    fill(0);
+    rect(startA, startB, (sizeA*9)/10, sizeB, trCorner, 0, 0, brCorner);
+    fill(225);
+    textSize(sizeB/2);
+    text(inText, startA+(sizeA*5)/100, startB+(sizeB*67)/100);
+    //check for click
     if (mousePressed && (mouseButton == LEFT) && Mouseover(startA, startB, sizeA, sizeB)){
     if(toggle && isClicked){
       toggle=false;
@@ -250,9 +255,7 @@ class Button{
       return option1;
     }  
   }
-  
- 
-
+  //mouseover check
   boolean Mouseover(float startA, float startB, float sizeA, float sizeB){
     if (mouseX >= startA && mouseX <= startA+sizeA && mouseY >= startB && mouseY <= startB+sizeB) {
       return true;
@@ -260,29 +263,28 @@ class Button{
       return false;
     }
   }
-
+  //check if the mouse is released
   void mouseReleased() {
     isClicked = false;
   }
 }
 
-
 void setup(){
   size(800, 800);
-
-  
+  //displaying the logo at startup
   logo = loadImage("logo.png");
   background(logo);
-  
+  //initialize the grid
   grid = new Grid(50, 100, 100, sensors);
   grid.CreateGrid();
-  
-
+  //serial
+  myPort = new Serial(this, Serial.list()[0], 9600);
   
 }
 
 void draw(){
   
+  //used to stop displaying the logo and creates buttons
   if(pic){
     delay(2000);
     background(200, 200, 200);
@@ -291,22 +293,23 @@ void draw(){
     button3.CreateButton();
     pic = false;
   }else{
+  //  myPort.write()
     //creation of outline behind the grid
     fill(0);
     rect(40, 90, 720, 520, 20, 20, 20, 20);
-    
+    //creation of label on the top
     noStroke();
     fill(0);
     rect(30, 20, 740, 50, 20, 20, 20, 20);
     fill(255);
     textSize(30);
     text("Охладителна система за персонален компютър", 41, 55);
-    
+    //used for the sliders
     fill(160);
     rect(385, 620, 390, 50, 10, 10, 10, 10);
     rect(385, 680, 390, 50, 10, 10, 10, 10);
     rect(385, 740, 390, 50, 10, 10, 10, 10);
-    
+    //creation of sliders
     slider1.CreateSlider();
     slider1.mouseDragged();
     slider2.CreateSlider();
@@ -315,7 +318,7 @@ void draw(){
     slider3.mouseDragged();
   
     noStroke();
-  
+    //timer for the buttons and updating
     currentMillis = millis();
     if(currentMillis - previousMillis >= interval){
       previousMillis = currentMillis;
@@ -323,7 +326,16 @@ void draw(){
       button2.UpdateButton();
       button3.UpdateButton();
     }
-  
+    
+    byte tempSensors[] = myPort.readBytes(12);
+    byte serialCounter = 0;
+    for(int i = 0; i < 4; i++){
+      for(int j = 0; j < 3; i++){
+        sensors[i][j] = tempSensors[serialCounter];
+        serialCounter++;
+      }
+    }
+    //creating the grid
     grid.UpdateGrid(sensors);
   }
 }
